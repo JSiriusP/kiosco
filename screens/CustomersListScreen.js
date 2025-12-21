@@ -48,13 +48,16 @@ export default function CustomersListScreen({ navigation }) {
                     data={clients}
                     keyExtractor={(item) => item.dni}
                     renderItem={({ item }) => (
-                         <View style={styles.clientItem}>
+                         <TouchableOpacity 
+                            style={styles.clientItem}
+                            onPress={() => navigation.navigate('ClientPayments', { client: item })}
+                         >
                              <View>
                                 <Text style={styles.clientName}>{item.name}</Text>
                                 <Text style={styles.clientSubtitle}>{item.course}</Text>
                              </View>
                              <Text style={styles.clientDni}>{item.dni}</Text>
-                         </View>
+                         </TouchableOpacity>
                     )}
                     contentContainerStyle={styles.listContent}
                 />

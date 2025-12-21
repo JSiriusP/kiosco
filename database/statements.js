@@ -57,3 +57,14 @@ export const getPayments = () => {
          return [];
     }
 }
+
+export const getPaymentsByClient = (clientDni) => {
+    try {
+        const sql = `SELECT * FROM payments WHERE clientId = ? ORDER BY date DESC`;
+        const result = db.getAllSync(sql, [clientDni]);
+        return result;
+    } catch (error) {
+        console.error("Error getting payments for client:", error);
+        return [];
+    }
+}
