@@ -3,17 +3,18 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "start": "NODE_OPTIONS='--require ./polyfill.js' expo start",
+    "android": "NODE_OPTIONS='--require ./polyfill.js' expo start --android",
+    "ios": "NODE_OPTIONS='--require ./polyfill.js' expo start --ios",
+    "web": "NODE_OPTIONS='--require ./polyfill.js' expo start --web"
   },
   "dependencies": {
     "@react-navigation/bottom-tabs": "^7.8.11",
     "@react-navigation/native": "^7.1.24",
     "@react-navigation/stack": "^7.6.11",
-    "expo": "^52.0.48",
-    "expo-status-bar": "~3.0.8",
+    "expo": "^54.0.30",
+    "expo-asset": "~12.0.12",
+    "expo-status-bar": "~3.0.9",
     "lucide-react-native": "^0.555.0",
     "react": "19.1.0",
     "react-native": "0.81.5",

@@ -30,7 +30,7 @@ export default function DashboardScreen() {
 
                 {/* Dashboard Title & Actions */}
                 <View style={styles.titleRow}>
-                    <Text style={styles.screenTitle}>Dashboard</Text>
+                    <Text style={styles.screenTitle}>Kiosco Papu</Text>
                     <View style={styles.actionButtons}>
                         <TouchableOpacity style={styles.filterButton}>
                             <Filter color="#374151" size={16} />

@@ -1,13 +1,49 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Calendar, Tag, FileText, DollarSign } from 'lucide-react-native';
+import { ArrowLeft, Calendar, FileText, DollarSign } from 'lucide-react-native';
 
 export default function PaymentScreen({ navigation }) {
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
-    const [category, setCategory] = useState('');
+
+    const [isPaid, setIsPaid] = useState(false);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+
+    // Error states
+    const [amountError, setAmountError] = useState(false);
+    const [descriptionError, setDescriptionError] = useState(false);
+
+    function savePayment() {
+        let valid = true;
+
+        if (amount === '') {
+            setAmountError(true);
+            valid = false;
+        } else {
+            setAmountError(false);
+        }
+
+        if (description === '') {
+            setDescriptionError(true);
+            valid = false;
+        } else {
+            setDescriptionError(false);
+        }
+
+        if (!valid) return;
+
+        const payment = {
+            amount: amount,
+            description: description,
+            isPaid: isPaid,
+            date: date
+        }
+
+        const sql = "INSERT INTO payments (amount, description, isPaid, date) VALUES (?, ?, ?, ?)";
+
+        return payment;
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -26,45 +62,57 @@ export default function PaymentScreen({ navigation }) {
                 <ScrollView contentContainerStyle={styles.content}>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Amount</Text>
-                        <View style={styles.inputContainer}>
-                            <DollarSign color="#9CA3AF" size={20} />
+                        <Text style={styles.label}>Monto</Text>
+                        <View style={[styles.inputContainer, amountError && styles.inputError]}>
+                            <DollarSign color={amountError ? "#EF4444" : "#9CA3AF"} size={20} />
                             <TextInput
                                 style={styles.input}
                                 placeholder="0.00"
                                 keyboardType="numeric"
                                 value={amount}
-                                onChangeText={setAmount}
+                                onChangeText={(text) => {
+                                    setAmount(text);
+                                    if (text) setAmountError(false);
+                                }}
                                 placeholderTextColor="#9CA3AF"
                             />
                         </View>
+                        {amountError && <Text style={styles.errorText}>Este campo es obligatorio</Text>}
                     </View>
 
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Description</Text>
-                        <View style={styles.inputContainer}>
-                            <FileText color="#9CA3AF" size={20} />
+                        <View style={[styles.inputContainer, descriptionError && styles.inputError]}>
+                            <FileText color={descriptionError ? "#EF4444" : "#9CA3AF"} size={20} />
                             <TextInput
                                 style={styles.input}
                                 placeholder="What is this payment for?"
                                 value={description}
-                                onChangeText={setDescription}
+                                onChangeText={(text) => {
+                                    setDescription(text);
+                                    if (text) setDescriptionError(false);
+                                }}
                                 placeholderTextColor="#9CA3AF"
                             />
                         </View>
+                        {descriptionError && <Text style={styles.errorText}>Este campo es obligatorio</Text>}
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Category</Text>
-                        <View style={styles.inputContainer}>
-                            <Tag color="#9CA3AF" size={20} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="e.g. Food, Rent, Utilities"
-                                value={category}
-                                onChangeText={setCategory}
-                                placeholderTextColor="#9CA3AF"
-                            />
+                        <Text style={styles.label}>Estado</Text>
+                        <View style={styles.toggleContainer}>
+                            <TouchableOpacity
+                                style={[styles.toggleButton, isPaid && styles.toggleButtonActive]}
+                                onPress={() => setIsPaid(true)}
+                            >
+                                <Text style={[styles.toggleText, isPaid && styles.toggleTextActive]}>Pagado</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.toggleButton, !isPaid && styles.toggleButtonActive]}
+                                onPress={() => setIsPaid(false)}
+                            >
+                                <Text style={[styles.toggleText, !isPaid && styles.toggleTextActive]}>No Pagado</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
 
@@ -82,7 +130,7 @@ export default function PaymentScreen({ navigation }) {
                         </View>
                     </View>
 
-                    <TouchableOpacity style={styles.saveButton}>
+                    <TouchableOpacity style={styles.saveButton} onPress={savePayment}>
                         <Text style={styles.saveButtonText}>Save Payment</Text>
                     </TouchableOpacity>
 
@@ -159,5 +207,41 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#FFFFFF',
+    },
+    toggleContainer: {
+        flexDirection: 'row',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 4,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    toggleButton: {
+        flex: 1,
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderRadius: 8,
+    },
+    toggleButtonActive: {
+        backgroundColor: '#6366F1',
+    },
+    toggleText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#6B7280',
+    },
+    toggleTextActive: {
+        color: '#FFFFFF',
+        fontWeight: '600',
+    },
+    inputError: {
+        borderColor: '#EF4444',
+        borderWidth: 1,
+    },
+    errorText: {
+        color: '#EF4444',
+        fontSize: 12,
+        marginTop: 4,
+        marginLeft: 4,
     },
 });
