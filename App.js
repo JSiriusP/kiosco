@@ -10,6 +10,8 @@ import CustomerScreen from './screens/CustomerScreen';
 
 import { initDB } from './database/db';
 
+import TestPaymentsScreen from './screens/TestPaymentsScreen';
+
 const Tab = createBottomTabNavigator();
 
 export default function App() {
@@ -31,6 +33,9 @@ export default function App() {
                 IconComponent = CreditCard;
               } else if (route.name === 'Customer') {
                 IconComponent = Users;
+              } else if (route.name === 'Debug') {
+                 // Reuse Dashboard icon or any other since it's temp
+                 IconComponent = LayoutDashboard;
               }
 
               return <IconComponent color={color} size={size} />;
@@ -43,6 +48,7 @@ export default function App() {
           <Tab.Screen name="Dashboard" component={DashboardScreen} />
           <Tab.Screen name="Payment" component={PaymentScreen} />
           <Tab.Screen name="Customer" component={CustomerScreen} />
+          <Tab.Screen name="Debug" component={TestPaymentsScreen} />
         </Tab.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

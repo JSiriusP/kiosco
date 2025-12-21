@@ -23,6 +23,18 @@ export const getClients = () => {
     }
 };
 
+export const searchClients = (query) => {
+    try {
+        const sql = `SELECT * FROM clients WHERE name LIKE ? OR dni LIKE ?`;
+        const searchPattern = `%${query}%`;
+         const result = db.getAllSync(sql, [searchPattern, searchPattern]);
+        return result;
+    } catch (error) {
+         console.error("Error searching clients:", error);
+         return [];
+    }
+};
+
 export const addPayment = (amount, description, isPaid, date, clientId) => {
      try {
         db.runSync(
@@ -33,5 +45,15 @@ export const addPayment = (amount, description, isPaid, date, clientId) => {
     } catch (error) {
         console.error("Error adding payment:", error);
         return { success: false, error: error.message };
+    }
+}
+
+export const getPayments = () => {
+    try {
+        const result = db.getAllSync('SELECT * FROM payments');
+        return result;
+    } catch (error) {
+         console.error("Error getting payments:", error);
+         return [];
     }
 }

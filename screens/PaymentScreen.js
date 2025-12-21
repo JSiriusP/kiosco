@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Calendar, FileText, DollarSign, User } from 'lucide-react-native';
+import { addPayment, searchClients } from '../database/statements';
 
 export default function PaymentScreen({ navigation }) {
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
+    
+    // Client Search State
     const [clientSearch, setClientSearch] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [selectedClientDni, setSelectedClientDni] = useState(null);
+    const [showResults, setShowResults] = useState(false);
 
     const [isPaid, setIsPaid] = useState(false);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -14,6 +20,26 @@ export default function PaymentScreen({ navigation }) {
     // Error states
     const [amountError, setAmountError] = useState(false);
     const [descriptionError, setDescriptionError] = useState(false);
+
+    const handleSearch = (text) => {
+        setClientSearch(text);
+        setSelectedClientDni(null); // Reset selection on edit
+        if (text.length > 0) {
+            const results = searchClients(text);
+            setSearchResults(results);
+            setShowResults(true);
+        } else {
+            setSearchResults([]);
+            setShowResults(false);
+        }
+    };
+
+    const selectClient = (client) => {
+        setClientSearch(client.name);
+        setSelectedClientDni(client.dni);
+        setShowResults(false);
+        Keyboard.dismiss();
+    };
 
     function savePayment() {
         let valid = true;
@@ -34,16 +60,20 @@ export default function PaymentScreen({ navigation }) {
 
         if (!valid) return;
 
-        const payment = {
-            amount: amount,
-            description: description,
-            isPaid: isPaid,
-            date: date
+        if (!selectedClientDni) {
+             Alert.alert('Error', 'Please select a valid client from the list');
+             return;
         }
 
-        const sql = "INSERT INTO payments (amount, description, isPaid, date) VALUES (?, ?, ?, ?)";
+        const result = addPayment(parseFloat(amount), description, isPaid, date, selectedClientDni);
 
-        return payment;
+        if (result.success) {
+            Alert.alert('Success', 'Payment saved successfully', [
+                { text: 'OK', onPress: () => navigation.goBack() }
+            ]);
+        } else {
+            Alert.alert('Error', 'Failed to save payment: ' + result.error);
+        }
     }
 
     return (
@@ -68,12 +98,26 @@ export default function PaymentScreen({ navigation }) {
                             <User color="#9CA3AF" size={20} />
                             <TextInput
                                 style={styles.input}
-                                placeholder="Search client..."
+                                placeholder="Search client by name or DNI..."
                                 value={clientSearch}
-                                onChangeText={setClientSearch}
+                                onChangeText={handleSearch}
                                 placeholderTextColor="#9CA3AF"
                             />
                         </View>
+                        {showResults && searchResults.length > 0 && (
+                            <View style={styles.resultsContainer}>
+                                {searchResults.map((item) => (
+                                    <TouchableOpacity
+                                        key={item.dni}
+                                        style={styles.resultItem}
+                                        onPress={() => selectClient(item)}
+                                    >
+                                        <Text style={styles.resultName}>{item.name}</Text>
+                                        <Text style={styles.resultDni}>{item.course} - {item.dni}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
                     </View>
 
                     <View style={styles.inputGroup}>
@@ -258,5 +302,27 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginTop: 4,
         marginLeft: 4,
+    },
+    resultsContainer: {
+        backgroundColor: 'white',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 8,
+        marginTop: 4,
+        maxHeight: 200,
+    },
+    resultItem: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    resultName: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#111827',
+    },
+    resultDni: {
+        fontSize: 12,
+        color: '#6B7280',
     },
 });
