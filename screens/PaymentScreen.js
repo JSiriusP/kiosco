@@ -19,7 +19,6 @@ export default function PaymentScreen({ navigation }) {
 
     // Error states
     const [amountError, setAmountError] = useState(false);
-    const [descriptionError, setDescriptionError] = useState(false);
 
     const handleSearch = (text) => {
         setClientSearch(text);
@@ -51,12 +50,7 @@ export default function PaymentScreen({ navigation }) {
             setAmountError(false);
         }
 
-        if (description === '') {
-            setDescriptionError(true);
-            valid = false;
-        } else {
-            setDescriptionError(false);
-        }
+
 
         if (!valid) return;
 
@@ -141,20 +135,16 @@ export default function PaymentScreen({ navigation }) {
 
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Description</Text>
-                        <View style={[styles.inputContainer, descriptionError && styles.inputError]}>
-                            <FileText color={descriptionError ? "#EF4444" : "#9CA3AF"} size={20} />
+                        <View style={styles.inputContainer}>
+                            <FileText color="#9CA3AF" size={20} />
                             <TextInput
                                 style={styles.input}
-                                placeholder="What is this payment for?"
+                                placeholder="What is this payment for? (Optional)"
                                 value={description}
-                                onChangeText={(text) => {
-                                    setDescription(text);
-                                    if (text) setDescriptionError(false);
-                                }}
+                                onChangeText={setDescription}
                                 placeholderTextColor="#9CA3AF"
                             />
                         </View>
-                        {descriptionError && <Text style={styles.errorText}>Este campo es obligatorio</Text>}
                     </View>
 
                     <View style={styles.inputGroup}>
