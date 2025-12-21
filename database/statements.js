@@ -1,40 +1,37 @@
-const db = require('better-sqlite3')('database.db')
+import { db } from './db';
 
-const createTables = () => {
-    const sql = `
-        CREATE TABLE IF NOT EXISTS clients (
-            name TEXT NOT NULL,
-            dni TEXT PRIMARY KEY,
-            phone TEXT NOT NULL,
-            course TEXT NOT NULL,
+export const addClient = (name, dni, phone, course) => {
+    try {
+        db.runSync(
+            'INSERT INTO clients (name, dni, phone, course) VALUES (?, ?, ?, ?)',
+            [name, dni, phone, course]
         );
+        return { success: true };
+    } catch (error) {
+        console.error("Error adding client:", error);
+        return { success: false, error: error.message };
+    }
+};
 
-        CREATE TABLE IF NOT EXISTS pay(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date DATE NOT NULL,
-            amount DOUBLE NOT NULL,
-            payed BOOLEAN NOT NULL,
-            dniClient TEXT NOT NULL,
-            FOREIGN KEY (dniClient) REFERENCES clients(dni)
+export const getClients = () => {
+    try {
+        const result = db.getAllSync('SELECT * FROM clients');
+        return result;
+    } catch (error) {
+         console.error("Error getting clients:", error);
+         return [];
+    }
+};
+
+export const addPayment = (amount, description, isPaid, date, clientId) => {
+     try {
+        db.runSync(
+            'INSERT INTO payments (amount, description, isPaid, date, clientId) VALUES (?, ?, ?, ?, ?)',
+            [amount, description, isPaid ? 1 : 0, date, clientId]
         );
-
-    `
-
-    db.prepare(sql).run()
-}
-
-const addClient = () => {
-    const sql = `
-        INSERT INTO clients (name, dni, phone, course)
-        VALUES (@name, @dni, @phone, @course);
-    `
-    return db.prepare(sql).run()
-}
-
-const addPay = () => {
-    const sql = `
-        INSERT INTO pay (date, amount, payed, dniClient)
-        VALUES (@date, @amount, @payed, @dniClient);
-    `
-    return db.prepare(sql).run()
+        return { success: true };
+    } catch (error) {
+        console.error("Error adding payment:", error);
+        return { success: false, error: error.message };
+    }
 }

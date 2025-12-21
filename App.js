@@ -8,9 +8,15 @@ import DashboardScreen from './screens/DashboardScreen';
 import PaymentScreen from './screens/PaymentScreen';
 import CustomerScreen from './screens/CustomerScreen';
 
+import { initDB } from './database/db';
+
 const Tab = createBottomTabNavigator();
 
 export default function App() {
+  React.useEffect(() => {
+    initDB().then(() => console.log('Database initialized')).catch(e => console.error(e));
+  }, []);
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>

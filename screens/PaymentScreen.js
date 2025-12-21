@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Calendar, FileText, DollarSign } from 'lucide-react-native';
+import { ArrowLeft, Calendar, FileText, DollarSign, User } from 'lucide-react-native';
 
 export default function PaymentScreen({ navigation }) {
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
+    const [clientSearch, setClientSearch] = useState('');
 
     const [isPaid, setIsPaid] = useState(false);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -60,6 +61,20 @@ export default function PaymentScreen({ navigation }) {
                 style={{ flex: 1 }}
             >
                 <ScrollView contentContainerStyle={styles.content}>
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Client</Text>
+                        <View style={styles.inputContainer}>
+                            <User color="#9CA3AF" size={20} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Search client..."
+                                value={clientSearch}
+                                onChangeText={setClientSearch}
+                                placeholderTextColor="#9CA3AF"
+                            />
+                        </View>
+                    </View>
 
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Monto</Text>
