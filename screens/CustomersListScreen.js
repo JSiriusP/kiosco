@@ -1,33 +1,51 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Switch, Linking, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Users } from 'lucide-react-native';
+import { Plus, Users, Phone, MessageCircle } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getClients } from '../database/statements';
+import { getClients, getDebtors } from '../database/statements';
 
 export default function CustomersListScreen({ navigation }) {
     const [clients, setClients] = useState([]);
+    const [showDebtors, setShowDebtors] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
-            const data = getClients();
+            const data = showDebtors ? getDebtors() : getClients();
             setClients(data);
-        }, [])
+        }, [showDebtors])
     );
+
+    const handleCall = (phone) => {
+        if (!phone) {
+            Alert.alert("Error", "Este cliente no tiene un número de teléfono registrado.");
+            return;
+        }
+        Linking.openURL(`tel:${phone}`);
+    };
+
+    const handleWhatsApp = (phone, name, amount) => {
+        if (!phone) {
+            Alert.alert("Error", "Este cliente no tiene un número de teléfono registrado.");
+            return;
+        }
+        const message = `Hola ${name}, tienes una deuda total de $${amount}. Por favor, paga tu deuda.`;
+        Linking.openURL(`whatsapp://send?phone=${phone}&text=${message}`);
+    };
 
     const renderEmptyState = () => (
         <View style={styles.emptyContainer}>
             <View style={styles.iconContainer}>
                 <Users color="#9CA3AF" size={48} />
             </View>
-            <Text style={styles.emptyTitle}>No Clients Found</Text>
-            <Text style={styles.emptyText}>No client has been added yet.</Text>
-            <TouchableOpacity 
+            <Text style={styles.emptyTitle}>No se encontraron clientes</Text>
+            <Text style={styles.emptyText}>No se han agregado clientes.</Text>
+            <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => navigation.navigate('AddCustomer')}
             >
                 <Plus color="#FFFFFF" size={20} />
-                <Text style={styles.addButtonText}>Add New Client</Text>
+                <Text style={styles.addButtonText}>Agregar Cliente</Text>
             </TouchableOpacity>
         </View>
     );
@@ -35,10 +53,21 @@ export default function CustomersListScreen({ navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Clients</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('AddCustomer')}>
-                     <Plus color="#6366F1" size={24} />
-                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Clientes</Text>
+                <View style={styles.headerActions}>
+                    <View style={styles.filterContainer}>
+                        <Text style={styles.filterText}>Deudores</Text>
+                        <Switch
+                            value={showDebtors}
+                            onValueChange={setShowDebtors}
+                            trackColor={{ false: "#767577", true: "#818cf8" }}
+                            thumbColor={showDebtors ? "#6366F1" : "#f4f3f4"}
+                        />
+                    </View>
+                    <TouchableOpacity onPress={() => navigation.navigate('AddCustomer')}>
+                        <Plus color="#6366F1" size={24} />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {clients.length === 0 ? (
@@ -48,16 +77,39 @@ export default function CustomersListScreen({ navigation }) {
                     data={clients}
                     keyExtractor={(item) => item.dni}
                     renderItem={({ item }) => (
-                         <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.clientItem}
                             onPress={() => navigation.navigate('ClientPayments', { client: item })}
-                         >
-                             <View>
-                                <Text style={styles.clientName}>{item.name}</Text>
-                                <Text style={styles.clientSubtitle}>{item.course}</Text>
-                             </View>
-                             <Text style={styles.clientDni}>{item.dni}</Text>
-                         </TouchableOpacity>
+                        >
+                            <View style={styles.clientInfo}>
+                                <View>
+                                    <Text style={styles.clientName}>{item.name}</Text>
+                                    <Text style={styles.clientSubtitle}>{item.course}</Text>
+                                </View>
+                                {showDebtors && (
+                                    <Text style={styles.debtText}>Deuda: ${item.totalDebt}</Text>
+                                )}
+                            </View>
+
+                            {showDebtors ? (
+                                <View style={styles.actionButtons}>
+                                    <TouchableOpacity
+                                        style={[styles.iconButton, styles.callButton]}
+                                        onPress={() => handleCall(item.phone)}
+                                    >
+                                        <Phone size={20} color="white" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.iconButton, styles.whatsappButton]}
+                                        onPress={() => handleWhatsApp(item.phone, item.name, item.totalDebt)}
+                                    >
+                                        <MessageCircle size={20} color="white" />
+                                    </TouchableOpacity>
+                                </View>
+                            ) : (
+                                <Text style={styles.clientDni}>{item.dni}</Text>
+                            )}
+                        </TouchableOpacity>
                     )}
                     contentContainerStyle={styles.listContent}
                 />
@@ -153,5 +205,45 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         color: '#9CA3AF',
+    },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    filterText: {
+        fontSize: 14,
+        color: '#4B5563',
+        fontWeight: '500',
+    },
+    clientInfo: {
+        flex: 1,
+    },
+    debtText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#EF4444',
+        marginTop: 4,
+    },
+    actionButtons: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    iconButton: {
+        padding: 8,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    callButton: {
+        backgroundColor: '#3B82F6',
+    },
+    whatsappButton: {
+        backgroundColor: '#22C55E',
     }
 });

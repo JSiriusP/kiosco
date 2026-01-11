@@ -21,8 +21,8 @@ export default function ClientPaymentsScreen({ route, navigation }) {
             <View style={styles.iconContainer}>
                 <CreditCard color="#9CA3AF" size={48} />
             </View>
-            <Text style={styles.emptyTitle}>No Payments Found</Text>
-            <Text style={styles.emptyText}>This client has no recorded payments.</Text>
+            <Text style={styles.emptyTitle}>No se encontraron pagos</Text>
+            <Text style={styles.emptyText}>Este cliente no tiene pagos registrados.</Text>
         </View>
     );
 

@@ -2,6 +2,10 @@ import { db } from './db';
 
 export const addClient = (name, dni, phone, course) => {
     try {
+        // const existingClient = db.getFirstSync('SELECT id FROM clients WHERE dni = ?', [dni]);
+        // if (existingClient) {
+        //     return { success: false, error: "La persona con el DNI ingresado ya existe" };
+        // }
         db.runSync(
             'INSERT INTO clients (name, dni, phone, course) VALUES (?, ?, ?, ?)',
             [name, dni, phone, course]
@@ -18,8 +22,8 @@ export const getClients = () => {
         const result = db.getAllSync('SELECT * FROM clients');
         return result;
     } catch (error) {
-         console.error("Error getting clients:", error);
-         return [];
+        console.error("Error getting clients:", error);
+        return [];
     }
 };
 
@@ -27,16 +31,16 @@ export const searchClients = (query) => {
     try {
         const sql = `SELECT * FROM clients WHERE name LIKE ? OR dni LIKE ?`;
         const searchPattern = `%${query}%`;
-         const result = db.getAllSync(sql, [searchPattern, searchPattern]);
+        const result = db.getAllSync(sql, [searchPattern, searchPattern]);
         return result;
     } catch (error) {
-         console.error("Error searching clients:", error);
-         return [];
+        console.error("Error searching clients:", error);
+        return [];
     }
 };
 
 export const addPayment = (amount, description, isPaid, date, clientId) => {
-     try {
+    try {
         db.runSync(
             'INSERT INTO payments (amount, description, isPaid, date, clientId) VALUES (?, ?, ?, ?, ?)',
             [amount, description, isPaid ? 1 : 0, date, clientId]
@@ -53,8 +57,8 @@ export const getPayments = () => {
         const result = db.getAllSync('SELECT * FROM payments');
         return result;
     } catch (error) {
-         console.error("Error getting payments:", error);
-         return [];
+        console.error("Error getting payments:", error);
+        return [];
     }
 }
 
@@ -65,6 +69,25 @@ export const getPaymentsByClient = (clientDni) => {
         return result;
     } catch (error) {
         console.error("Error getting payments for client:", error);
+        return [];
+    }
+}
+
+export const getDebtors = () => {
+    try {
+        const sql = `
+            SELECT c.*, SUM(p.amount) as totalDebt
+            FROM clients c
+            JOIN payments p ON c.dni = p.clientId
+            WHERE p.isPaid = 0
+            GROUP BY c.dni
+            HAVING totalDebt > 0
+            ORDER BY totalDebt DESC
+        `;
+        const result = db.getAllSync(sql);
+        return result;
+    } catch (error) {
+        console.error("Error getting debtors:", error);
         return [];
     }
 }

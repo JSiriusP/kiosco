@@ -76,7 +76,7 @@ export default function PaymentScreen({ navigation }) {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <ArrowLeft color="#111827" size={24} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>New Payment</Text>
+                <Text style={styles.headerTitle}>Nuevo Pago</Text>
                 <View style={{ width: 24 }} />
             </View>
 
@@ -180,7 +180,7 @@ export default function PaymentScreen({ navigation }) {
                     </View>
 
                     <TouchableOpacity style={styles.saveButton} onPress={savePayment}>
-                        <Text style={styles.saveButtonText}>Save Payment</Text>
+                        <Text style={styles.saveButtonText}>Guardar Pago</Text>
                     </TouchableOpacity>
 
                 </ScrollView>

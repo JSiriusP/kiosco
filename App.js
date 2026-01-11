@@ -29,9 +29,9 @@ export default function App() {
 
               if (route.name === 'Dashboard') {
                 IconComponent = LayoutDashboard;
-              } else if (route.name === 'Payment') {
+              } else if (route.name === 'Pagos') {
                 IconComponent = CreditCard;
-              } else if (route.name === 'Customer') {
+              } else if (route.name === 'Clientes') {
                 IconComponent = Users;
               } else if (route.name === 'Debug') {
                  // Reuse Dashboard icon or any other since it's temp
@@ -46,8 +46,8 @@ export default function App() {
           })}
         >
           <Tab.Screen name="Dashboard" component={DashboardScreen} />
-          <Tab.Screen name="Payment" component={PaymentScreen} />
-          <Tab.Screen name="Customer" component={CustomerScreen} />
+          <Tab.Screen name="Pagos" component={PaymentScreen} />
+          <Tab.Screen name="Clientes" component={CustomerScreen} />
           <Tab.Screen name="Debug" component={TestPaymentsScreen} />
         </Tab.Navigator>
       </NavigationContainer>

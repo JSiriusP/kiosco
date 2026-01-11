@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert, Modal, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, User, Phone, BookOpen, Hash } from 'lucide-react-native';
+import { ArrowLeft, User, Phone, BookOpen, Hash, ChevronDown } from 'lucide-react-native';
 import { addClient } from '../database/statements';
 
 export default function AddCustomerScreen({ navigation }) {
@@ -9,20 +9,33 @@ export default function AddCustomerScreen({ navigation }) {
     const [dni, setDni] = useState('');
     const [phone, setPhone] = useState('');
     const [course, setCourse] = useState('');
+    const [showCourseModal, setShowCourseModal] = useState(false);
+
+    const COURSE_OPTIONS = [
+        ...Array.from({ length: 6 }, (_, i) => `Primaria ${i + 1}°`),
+        ...Array.from({ length: 6 }, (_, i) => `Secundaria ${i + 1}° `),
+        'Desconocido'
+    ];
 
     const handleSave = () => {
+        const dniRegex = /^[0-9]{8}$/;
         if (!name || !dni || !phone || !course) {
-            Alert.alert('Error', 'Please fill in all fields');
+            Alert.alert('Error', 'Por favor, complete todos los campos');
+            return;
+        }
+
+        if (!dniRegex.test(dni)) {
+            Alert.alert('Error', 'El DNI debe tener 8 caracteres');
             return;
         }
 
         const result = addClient(name, dni, phone, course);
         if (result.success) {
-            Alert.alert('Success', 'Client added successfully', [
+            Alert.alert('Success', 'Cliente agregado exitosamente', [
                 { text: 'OK', onPress: () => navigation.goBack() }
             ]);
         } else {
-             Alert.alert('Error', 'Failed to add client: ' + result.error);
+            Alert.alert('Error', 'No se pudo agregar el cliente: ' + result.error);
         }
     }
 
@@ -56,7 +69,7 @@ export default function AddCustomerScreen({ navigation }) {
                         </View>
                     </View>
 
-                     <View style={styles.inputGroup}>
+                    <View style={styles.inputGroup}>
                         <Text style={styles.label}>DNI</Text>
                         <View style={styles.inputContainer}>
                             <Hash color="#9CA3AF" size={20} />
@@ -72,7 +85,7 @@ export default function AddCustomerScreen({ navigation }) {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Phone Number</Text>
+                        <Text style={styles.label}>Número de teléfono</Text>
                         <View style={styles.inputContainer}>
                             <Phone color="#9CA3AF" size={20} />
                             <TextInput
@@ -87,21 +100,63 @@ export default function AddCustomerScreen({ navigation }) {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Course</Text>
-                        <View style={styles.inputContainer}>
+                        <Text style={styles.label}>Curso</Text>
+                        <TouchableOpacity
+                            style={styles.inputContainer}
+                            onPress={() => setShowCourseModal(true)}
+                        >
                             <BookOpen color="#9CA3AF" size={20} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Mathematics 101"
-                                value={course}
-                                onChangeText={setCourse}
-                                placeholderTextColor="#9CA3AF"
-                            />
-                        </View>
+                            <Text style={[
+                                styles.input,
+                                !course && { color: '#9CA3AF' }
+                            ]}>
+                                {course || "Select Course"}
+                            </Text>
+                            <ChevronDown color="#9CA3AF" size={20} />
+                        </TouchableOpacity>
                     </View>
 
+                    <Modal
+                        visible={showCourseModal}
+                        transparent={true}
+                        animationType="slide"
+                        onRequestClose={() => setShowCourseModal(false)}
+                    >
+                        <View style={styles.modalOverlay}>
+                            <View style={styles.modalContent}>
+                                <View style={styles.modalHeader}>
+                                    <Text style={styles.modalTitle}>Curso</Text>
+                                    <TouchableOpacity onPress={() => setShowCourseModal(false)}>
+                                        <Text style={styles.closeButton}>Cerrar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <FlatList
+                                    data={COURSE_OPTIONS}
+                                    keyExtractor={(item) => item}
+                                    renderItem={({ item }) => (
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.optionItem,
+                                                course === item && styles.selectedOption
+                                            ]}
+                                            onPress={() => {
+                                                setCourse(item);
+                                                setShowCourseModal(false);
+                                            }}
+                                        >
+                                            <Text style={[
+                                                styles.optionText,
+                                                course === item && styles.selectedOptionText
+                                            ]}>{item}</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                />
+                            </View>
+                        </View>
+                    </Modal>
+
                     <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                        <Text style={styles.saveButtonText}>Save Customer</Text>
+                        <Text style={styles.saveButtonText}>Guardar Cliente</Text>
                     </TouchableOpacity>
 
                 </ScrollView>
@@ -177,5 +232,52 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#FFFFFF',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        maxHeight: '70%',
+        paddingBottom: 20,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#111827',
+    },
+    closeButton: {
+        fontSize: 16,
+        color: '#6366F1',
+        fontWeight: '600',
+    },
+    optionItem: {
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    selectedOption: {
+        backgroundColor: '#EEF2FF',
+    },
+    optionText: {
+        fontSize: 16,
+        color: '#374151',
+    },
+    selectedOptionText: {
+        color: '#6366F1',
+        fontWeight: '600',
     },
 });

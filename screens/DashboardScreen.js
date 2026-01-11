@@ -34,11 +34,11 @@ export default function DashboardScreen() {
                     <View style={styles.actionButtons}>
                         <TouchableOpacity style={styles.filterButton}>
                             <Filter color="#374151" size={16} />
-                            <Text style={styles.filterText}>Filter</Text>
+                            <Text style={styles.filterText}>Filtrar</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.addButton}>
                             <Plus color="#FFFFFF" size={16} />
-                            <Text style={styles.addText}>Add new</Text>
+                            <Text style={styles.addText}>Agregar nuevo</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -71,7 +71,7 @@ export default function DashboardScreen() {
                                 <Text style={styles.trendText}>16.02%</Text>
                             </View>
                         </View>
-                        <Text style={styles.cardLabel}>Incomes This Month</Text>
+                        <Text style={styles.cardLabel}>Ingresos Este Mes</Text>
                         <Text style={styles.cardValue}>$12,003.902</Text>
                     </View>
 
@@ -86,7 +86,7 @@ export default function DashboardScreen() {
                                 <Text style={[styles.trendText, { color: '#EF4444' }]}>4.32%</Text>
                             </View>
                         </View>
-                        <Text style={styles.cardLabel}>Expenses This Month</Text>
+                        <Text style={styles.cardLabel}>Gastos Este Mes</Text>
                         <Text style={styles.cardValue}>$12,003.902</Text>
                     </View>
                 </View>
